@@ -20,6 +20,7 @@ local branchSpawnInterval = 1.6 -- seconds between new branches
 local timeSinceLastSpawn = 0
 
 local gameOver = false
+local score = 0
 
 -- Standard AABB (Axis-Aligned Bounding Box) collision check between two rectangles
 local function rectsOverlap(x1, y1, w1, h1, x2, y2, w2, h2)
@@ -37,7 +38,8 @@ local function spawnBranch()
 
     table.insert(branches, {
         x = 400,
-        gapY = gapY
+        gapY = gapY,
+        scored = false
     })
 end
 
@@ -96,6 +98,12 @@ function love.update(dt)
         if hitsTop or hitsBottom then
             gameOver = true
         end
+
+        -- The owl has passed this branch once its left edge clears the branch's right edge
+        if not branch.scored and owl.x > branch.x + branchWidth then
+            branch.scored = true
+            score = score + 1
+        end
     end
 end
 
@@ -117,6 +125,10 @@ function love.draw()
         love.graphics.rectangle("fill", branch.x, bottomY, branchWidth, bottomHeight)
     end
 
+    -- Display the current score at the top of the screen
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.printf(tostring(score), 0, 20, 400, "center")
+
     if gameOver then
         love.graphics.setColor(1, 1, 1)
         love.graphics.printf("Game Over", 0, 250, 400, "center")
@@ -131,6 +143,7 @@ local function resetGame()
     branches = {}
     timeSinceLastSpawn = 0
     gameOver = false
+    score = 0
 end
 
 function love.keypressed(key)
